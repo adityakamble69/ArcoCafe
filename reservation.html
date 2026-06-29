@@ -1,0 +1,856 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Reserve a Table — Arco Café</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+
+  <style>
+    /* ═══════════════════════════════════════════════════════════
+       RESERVATION PAGE — page-specific styles
+       Uses all tokens from style.css (--teal, --gold, --cream …)
+    ═══════════════════════════════════════════════════════════ */
+
+    /* ── Hero banner ─────────────────────────────────────────── */
+    .res-hero {
+      position: relative;
+      padding: 7rem 3rem 4rem;
+      background:
+        linear-gradient(160deg, rgba(26,43,43,0.92) 0%, rgba(26,43,43,0.72) 60%, rgba(26,43,43,0.88) 100%),
+        url('https://images.unsplash.com/photo-1521017432531-fbd92d768814?w=1400&q=80') center/cover no-repeat;
+      text-align: center;
+      overflow: hidden;
+    }
+
+    /* Decorative arch — café signature */
+    .res-hero::before {
+      content: '';
+      position: absolute;
+      top: -10px; left: 50%; transform: translateX(-50%);
+      width: min(240px, 40vw);
+      height: min(320px, 50vw);
+      border: 1px solid rgba(212,168,67,0.25);
+      border-radius: 50% 50% 0 0 / 30% 30% 0 0;
+      pointer-events: none;
+    }
+    .res-hero::after {
+      content: '';
+      position: absolute;
+      top: 0; left: 50%; transform: translateX(-50%);
+      width: min(220px, 38vw);
+      height: 3px;
+      background: linear-gradient(90deg, transparent, var(--gold), transparent);
+      filter: blur(3px);
+      opacity: 0.6;
+    }
+
+    .res-eyebrow {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-size: 11px; font-weight: 500; letter-spacing: 0.12em;
+      text-transform: uppercase; color: var(--gold);
+      margin-bottom: 1rem;
+    }
+    .res-eyebrow::before,
+    .res-eyebrow::after {
+      content: ''; display: block;
+      width: 28px; height: 1px; background: var(--gold); opacity: 0.5;
+    }
+
+    .res-title {
+      font-family: var(--font-display);
+      font-size: clamp(2.2rem, 5vw, 3.5rem);
+      font-weight: 300; color: var(--cream);
+      line-height: 1.15; margin-bottom: 0.75rem;
+    }
+    .res-title em { font-style: italic; color: var(--gold); }
+
+    .res-sub {
+      font-size: 15px; color: rgba(245,240,232,0.65);
+      max-width: 480px; margin: 0 auto; line-height: 1.7;
+    }
+
+    /* ── Info pills ──────────────────────────────────────────── */
+    .res-pills {
+      display: flex; flex-wrap: wrap; justify-content: center;
+      gap: 0.75rem; margin-top: 2rem;
+    }
+    .pill {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 12px; color: rgba(245,240,232,0.7);
+      background: rgba(255,255,255,0.07);
+      border: 0.5px solid rgba(212,168,67,0.2);
+      padding: 7px 16px; border-radius: 50px;
+      backdrop-filter: blur(8px);
+    }
+    .pill-icon { font-size: 14px; }
+
+    /* ── Layout ──────────────────────────────────────────────── */
+    .res-body {
+      display: grid;
+      grid-template-columns: 1fr 380px;
+      gap: 3rem;
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 4rem 3rem 6rem;
+      align-items: start;
+    }
+
+    /* ── Form card ───────────────────────────────────────────── */
+    .form-card {
+      background: #fff;
+      border-radius: 20px;
+      box-shadow: 0 4px 40px rgba(26,43,43,0.08);
+      overflow: hidden;
+    }
+
+    .form-header {
+      background: var(--teal-bg);
+      padding: 1.5rem 2rem;
+      display: flex; align-items: center; gap: 12px;
+    }
+    .form-header-icon {
+      width: 38px; height: 38px; border-radius: 10px;
+      background: rgba(212,168,67,0.15);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px; flex-shrink: 0;
+    }
+    .form-header-title {
+      font-family: var(--font-display);
+      font-size: 1.2rem; font-weight: 400; color: var(--cream);
+    }
+    .form-header-sub {
+      font-size: 12px; color: rgba(245,240,232,0.5); margin-top: 2px;
+    }
+
+    .form-inner { padding: 2rem; }
+
+    /* Fieldset grouping */
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    label {
+      display: block;
+      font-size: 11px; font-weight: 500; letter-spacing: 0.08em;
+      text-transform: uppercase; color: var(--text-mid);
+      margin-bottom: 6px;
+    }
+    label .req { color: var(--teal); }
+
+    input, select, textarea {
+      width: 100%;
+      font-family: var(--font-body);
+      font-size: 14px; color: var(--text-dark);
+      background: var(--cream);
+      border: 1px solid rgba(91,158,160,0.25);
+      border-radius: 10px;
+      padding: 11px 14px;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+      -webkit-appearance: none;
+    }
+    input:focus, select:focus, textarea:focus {
+      border-color: var(--teal);
+      box-shadow: 0 0 0 3px rgba(91,158,160,0.12);
+      background: #fff;
+    }
+    input.error, select.error {
+      border-color: #e07070;
+      box-shadow: 0 0 0 3px rgba(224,112,112,0.1);
+    }
+    .field-error {
+      font-size: 11px; color: #c0392b;
+      margin-top: 4px; display: none;
+    }
+    .field-error.show { display: block; }
+
+    select {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%237A9A9A' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 14px center;
+      padding-right: 36px;
+      cursor: pointer;
+    }
+
+    textarea { resize: vertical; min-height: 90px; }
+
+    /* Seating preference */
+    .seat-options {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
+    }
+    .seat-opt {
+      display: none;
+    }
+    .seat-opt + label {
+      display: flex; flex-direction: column; align-items: center; gap: 4px;
+      font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em;
+      color: var(--text-muted);
+      background: var(--cream);
+      border: 1px solid rgba(91,158,160,0.2);
+      border-radius: 10px;
+      padding: 12px 8px;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s, color 0.2s;
+      text-align: center;
+    }
+    .seat-opt + label .seat-icon { font-size: 20px; margin-bottom: 2px; }
+    .seat-opt:checked + label {
+      border-color: var(--teal);
+      background: rgba(91,158,160,0.08);
+      color: var(--teal-deep);
+    }
+
+    /* Submit button */
+    .btn-submit {
+      width: 100%;
+      font-family: var(--font-body);
+      font-size: 14px; font-weight: 500; letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--teal-bg);
+      background: var(--gold);
+      border: none; border-radius: 50px;
+      padding: 14px 28px;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.15s, opacity 0.2s;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      margin-top: 1.75rem;
+    }
+    .btn-submit:hover:not(:disabled) { background: #e8bc5a; transform: translateY(-1px); }
+    .btn-submit:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+    .btn-spinner {
+      width: 16px; height: 16px;
+      border: 2px solid rgba(14,36,37,0.2);
+      border-top-color: var(--teal-bg);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      display: none;
+    }
+    .btn-spinner.show { display: block; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Success state ───────────────────────────────────────── */
+    .success-state {
+      display: none;
+      flex-direction: column; align-items: center;
+      text-align: center; padding: 3rem 2rem;
+    }
+    .success-state.show { display: flex; }
+    .success-icon {
+      width: 72px; height: 72px; border-radius: 50%;
+      background: rgba(91,158,160,0.12);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 32px; margin-bottom: 1.25rem;
+      animation: popIn 0.5s var(--ease);
+    }
+    @keyframes popIn {
+      from { transform: scale(0.6); opacity: 0; }
+      to   { transform: scale(1); opacity: 1; }
+    }
+    .success-title {
+      font-family: var(--font-display);
+      font-size: 1.6rem; font-weight: 300; color: var(--text-dark);
+      margin-bottom: 0.5rem;
+    }
+    .success-sub {
+      font-size: 14px; color: var(--text-muted); line-height: 1.7;
+      max-width: 320px; margin-bottom: 1.5rem;
+    }
+    .success-detail {
+      background: var(--cream); border-radius: 12px;
+      padding: 1rem 1.5rem; width: 100%; text-align: left;
+      font-size: 13px; color: var(--text-mid); line-height: 1.9;
+    }
+    .success-detail strong { color: var(--text-dark); font-weight: 500; }
+    .btn-another {
+      margin-top: 1.5rem;
+      font-size: 13px; font-weight: 500; letter-spacing: 0.06em;
+      text-transform: uppercase; color: var(--teal);
+      background: none; border: 1px solid rgba(91,158,160,0.35);
+      border-radius: 50px; padding: 10px 24px;
+      cursor: pointer; transition: background 0.2s, border-color 0.2s;
+    }
+    .btn-another:hover { background: rgba(91,158,160,0.08); border-color: var(--teal); }
+
+    /* ── Sidebar ─────────────────────────────────────────────── */
+    .sidebar { display: flex; flex-direction: column; gap: 1.25rem; }
+
+    .info-card {
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 2px 20px rgba(26,43,43,0.06);
+      overflow: hidden;
+    }
+    .info-card-head {
+      background: var(--cream);
+      padding: 1rem 1.25rem;
+      font-size: 11px; font-weight: 500; letter-spacing: 0.1em;
+      text-transform: uppercase; color: var(--text-mid);
+      border-bottom: 0.5px solid rgba(91,158,160,0.15);
+      display: flex; align-items: center; gap: 8px;
+    }
+    .info-card-head-icon { font-size: 15px; }
+    .info-card-body { padding: 1.25rem; }
+
+    /* Hours table */
+    .hours-row {
+      display: flex; justify-content: space-between; align-items: center;
+      font-size: 13px; padding: 6px 0;
+      border-bottom: 0.5px solid rgba(91,158,160,0.1);
+    }
+    .hours-row:last-child { border-bottom: none; }
+    .hours-day { color: var(--text-mid); }
+    .hours-time { color: var(--text-dark); font-weight: 500; }
+    .hours-badge {
+      font-size: 10px; font-weight: 500; letter-spacing: 0.06em;
+      text-transform: uppercase; padding: 2px 8px; border-radius: 20px;
+      background: rgba(91,158,160,0.12); color: var(--teal-deep);
+    }
+
+    /* Seating visual */
+    .seat-visual {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
+    }
+    .seat-card {
+      background: var(--cream); border-radius: 10px;
+      padding: 10px 8px; text-align: center;
+    }
+    .seat-card-icon { font-size: 22px; margin-bottom: 4px; }
+    .seat-card-name { font-size: 11px; font-weight: 500; color: var(--text-mid); }
+    .seat-card-desc { font-size: 10px; color: var(--text-muted); margin-top: 2px; line-height: 1.4; }
+
+    /* Policies */
+    .policy-item {
+      display: flex; gap: 10px; align-items: flex-start;
+      font-size: 13px; color: var(--text-mid);
+      line-height: 1.6; padding: 6px 0;
+      border-bottom: 0.5px solid rgba(91,158,160,0.1);
+    }
+    .policy-item:last-child { border-bottom: none; }
+    .policy-icon { font-size: 14px; flex-shrink: 0; margin-top: 2px; }
+
+    /* ── Gallery strip ───────────────────────────────────────── */
+    .res-gallery {
+      display: grid; grid-template-columns: repeat(3,1fr); gap: 10px;
+      padding: 0 3rem 5rem; max-width: 1100px; margin: 0 auto;
+    }
+    .res-gallery img {
+      width: 100%; aspect-ratio: 4/3; object-fit: cover;
+      border-radius: 14px;
+      transition: transform 0.4s var(--ease);
+    }
+    .res-gallery img:hover { transform: scale(1.03); }
+
+    /* ── Responsive ──────────────────────────────────────────── */
+    @media (max-width: 900px) {
+      .res-hero { padding: 6rem 1.5rem 3rem; }
+      .res-body {
+        grid-template-columns: 1fr;
+        padding: 2.5rem 1.5rem 4rem;
+        gap: 2rem;
+      }
+      .sidebar { order: -1; }
+      .seat-options { grid-template-columns: repeat(3,1fr); }
+      .res-gallery { padding: 0 1.5rem 4rem; }
+    }
+    @media (max-width: 540px) {
+      .form-row { grid-template-columns: 1fr; }
+      .seat-options { grid-template-columns: repeat(3,1fr); }
+      .res-gallery { grid-template-columns: 1fr 1fr; }
+      .res-gallery img:last-child { display: none; }
+    }
+  </style>
+</head>
+
+<body class="menu-page"><!-- menu-page keeps nav solid -->
+
+  <!-- ── NAV ─────────────────────────────────────────────────── -->
+  <nav id="navbar">
+    <a href="index.html" class="nav-logo">Arco<span>.</span></a>
+    <ul class="nav-links">
+      <li><a href="menu.html">Menu</a></li>
+      <li><a href="index.html#about">About</a></li>
+      <li><a href="index.html#gallery">Gallery</a></li>
+      <li><a href="index.html#contact">Contact</a></li>
+    </ul>
+    <a href="reservation.html" class="nav-cta active">Reserve a Table</a>
+    <div class="hamburger" id="hamburger" onclick="openDrawer()">
+      <span></span><span></span><span></span>
+    </div>
+  </nav>
+
+  <!-- Mobile drawer -->
+  <div class="drawer-overlay" id="drawerOverlay" onclick="closeDrawer()"></div>
+  <div class="drawer" id="drawer">
+    <button class="drawer-close" onclick="closeDrawer()">✕</button>
+    <a href="index.html" onclick="closeDrawer()">Home</a>
+    <a href="menu.html" onclick="closeDrawer()">Menu</a>
+    <a href="index.html#about" onclick="closeDrawer()">About</a>
+    <a href="index.html#gallery" onclick="closeDrawer()">Gallery</a>
+    <a href="index.html#contact" onclick="closeDrawer()">Contact</a>
+  </div>
+
+  <!-- ── HERO ─────────────────────────────────────────────────── -->
+  <section class="res-hero">
+    <div class="res-eyebrow">Reserve Your Spot</div>
+    <h1 class="res-title">Book a table at<br><em>Arco Café.</em></h1>
+    <p class="res-sub">Window seat, arched alcove, or open floor — your corner is waiting. Reservations confirmed instantly.</p>
+    <div class="res-pills">
+      <span class="pill"><span class="pill-icon">⏱</span> Instant confirmation</span>
+      <span class="pill"><span class="pill-icon">✉️</span> Email sent to you</span>
+      <span class="pill"><span class="pill-icon">🪑</span> Up to 12 guests</span>
+    </div>
+  </section>
+
+  <!-- ── BODY: Form + Sidebar ──────────────────────────────────── -->
+  <div class="res-body">
+
+    <!-- FORM CARD -->
+    <div class="form-card">
+      <div class="form-header">
+        <div class="form-header-icon">📅</div>
+        <div>
+          <div class="form-header-title">Reservation Details</div>
+          <div class="form-header-sub">Fields marked <span style="color:var(--teal-pale)">*</span> are required</div>
+        </div>
+      </div>
+
+      <!-- FORM -->
+      <div id="formWrap" class="form-inner">
+
+        <!-- Name + Phone -->
+        <div class="form-row">
+          <div>
+            <label for="name">Full Name <span class="req">*</span></label>
+            <input type="text" id="name" placeholder="Your name" autocomplete="name" />
+            <div class="field-error" id="err-name">Please enter your name.</div>
+          </div>
+          <div>
+            <label for="phone">Phone <span class="req">*</span></label>
+            <input type="tel" id="phone" placeholder="+91 98765 43210" autocomplete="tel" />
+            <div class="field-error" id="err-phone">Please enter a valid phone number.</div>
+          </div>
+        </div>
+
+        <!-- Email -->
+        <div class="form-group">
+          <label for="email">Email Address <span class="req">*</span></label>
+          <input type="email" id="email" placeholder="you@email.com" autocomplete="email" />
+          <div class="field-error" id="err-email">Please enter a valid email address.</div>
+        </div>
+
+        <!-- Date + Time -->
+        <div class="form-row">
+          <div>
+            <label for="date">Date <span class="req">*</span></label>
+            <input type="date" id="date" />
+            <div class="field-error" id="err-date">Please pick a date.</div>
+          </div>
+          <div>
+            <label for="time">Time <span class="req">*</span></label>
+            <select id="time">
+              <option value="">Select a time</option>
+              <option>8:00 AM</option><option>8:30 AM</option>
+              <option>9:00 AM</option><option>9:30 AM</option>
+              <option>10:00 AM</option><option>10:30 AM</option>
+              <option>11:00 AM</option><option>11:30 AM</option>
+              <option>12:00 PM</option><option>12:30 PM</option>
+              <option>1:00 PM</option><option>1:30 PM</option>
+              <option>2:00 PM</option><option>2:30 PM</option>
+              <option>3:00 PM</option><option>3:30 PM</option>
+              <option>4:00 PM</option><option>4:30 PM</option>
+              <option>5:00 PM</option><option>5:30 PM</option>
+              <option>6:00 PM</option><option>6:30 PM</option>
+              <option>7:00 PM</option><option>7:30 PM</option>
+              <option>8:00 PM</option><option>8:30 PM</option>
+              <option>9:00 PM</option><option>9:30 PM</option>
+            </select>
+            <div class="field-error" id="err-time">Please select a time.</div>
+          </div>
+        </div>
+
+        <!-- Guests -->
+        <div class="form-group">
+          <label for="guests">Number of Guests <span class="req">*</span></label>
+          <select id="guests">
+            <option value="">How many guests?</option>
+            <option>1 person</option>
+            <option>2 people</option>
+            <option>3 people</option>
+            <option>4 people</option>
+            <option>5 people</option>
+            <option>6 people</option>
+            <option>7 people</option>
+            <option>8 people</option>
+            <option>10 people</option>
+            <option>12 people</option>
+            <option>More than 12 — call us</option>
+          </select>
+          <div class="field-error" id="err-guests">Please select the number of guests.</div>
+        </div>
+
+        <!-- Seating preference -->
+        <div class="form-group">
+          <label>Seating Preference</label>
+          <div class="seat-options">
+            <div>
+              <input class="seat-opt" type="radio" name="seat" id="seat-window" value="Window Seat" />
+              <label for="seat-window">
+                <span class="seat-icon">🪟</span>
+                Window
+              </label>
+            </div>
+            <div>
+              <input class="seat-opt" type="radio" name="seat" id="seat-arch" value="Arch Alcove" checked />
+              <label for="seat-arch">
+                <span class="seat-icon">🏛</span>
+                Arch Alcove
+              </label>
+            </div>
+            <div>
+              <input class="seat-opt" type="radio" name="seat" id="seat-open" value="Open Floor" />
+              <label for="seat-open">
+                <span class="seat-icon">☕</span>
+                Open Floor
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Occasion -->
+        <div class="form-group">
+          <label for="occasion">Occasion <span style="color:var(--text-muted);font-weight:400;text-transform:none;letter-spacing:0">(optional)</span></label>
+          <select id="occasion">
+            <option value="">Select if applicable</option>
+            <option>Birthday</option>
+            <option>Anniversary</option>
+            <option>Date Night</option>
+            <option>Business Meeting</option>
+            <option>Family Gathering</option>
+            <option>Celebration</option>
+            <option>Other</option>
+          </select>
+        </div>
+
+        <!-- Notes -->
+        <div class="form-group">
+          <label for="notes">Special Requests <span style="color:var(--text-muted);font-weight:400;text-transform:none;letter-spacing:0">(optional)</span></label>
+          <textarea id="notes" placeholder="Dietary needs, allergies, high chair, surprise cake…"></textarea>
+        </div>
+
+        <!-- Submit -->
+        <button class="btn-submit" id="submitBtn" onclick="submitReservation()">
+          <div class="btn-spinner" id="btnSpinner"></div>
+          <span id="btnText">Confirm Reservation</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M5 12h14M12 5l7 7-7 7"/>
+          </svg>
+        </button>
+
+        <!-- General error -->
+        <div id="formError" style="display:none;margin-top:1rem;font-size:13px;color:#c0392b;text-align:center;padding:10px;background:rgba(192,57,43,0.06);border-radius:8px;">
+          Something went wrong. Please try again or call us directly.
+        </div>
+      </div>
+
+      <!-- SUCCESS STATE -->
+      <div class="success-state" id="successState">
+        <div class="success-icon">✅</div>
+        <div class="success-title">You're all set!</div>
+        <p class="success-sub">Your reservation has been received. A confirmation has been sent to your email.</p>
+        <div class="success-detail" id="successDetail"><!-- filled by JS --></div>
+        <button class="btn-another" onclick="resetForm()">Make another reservation</button>
+      </div>
+    </div>
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+
+      <!-- Hours -->
+      <div class="info-card">
+        <div class="info-card-head">
+          <span class="info-card-head-icon">🕐</span> Opening Hours
+        </div>
+        <div class="info-card-body">
+          <div class="hours-row">
+            <span class="hours-day">Mon – Fri</span>
+            <span class="hours-time">8:00 AM – 10:00 PM</span>
+          </div>
+          <div class="hours-row">
+            <span class="hours-day">Saturday</span>
+            <span class="hours-time">8:00 AM – 11:00 PM</span>
+          </div>
+          <div class="hours-row">
+            <span class="hours-day">Sunday</span>
+            <span class="hours-time">9:00 AM – 8:00 PM</span>
+          </div>
+          <div class="hours-row">
+            <span class="hours-day">Public Holidays</span>
+            <span class="hours-time">10:00 AM – 7:00 PM</span>
+          </div>
+          <div style="margin-top:1rem;padding-top:0.75rem;border-top:0.5px solid rgba(91,158,160,0.15);">
+            <span class="hours-badge">Last reservation 1 hr before closing</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Seating -->
+      <div class="info-card">
+        <div class="info-card-head">
+          <span class="info-card-head-icon">🪑</span> Our Seating
+        </div>
+        <div class="info-card-body">
+          <div class="seat-visual">
+            <div class="seat-card">
+              <div class="seat-card-icon">🪟</div>
+              <div class="seat-card-name">Window</div>
+              <div class="seat-card-desc">Natural light & street view</div>
+            </div>
+            <div class="seat-card">
+              <div class="seat-card-icon">🏛</div>
+              <div class="seat-card-name">Arch Alcove</div>
+              <div class="seat-card-desc">Private & atmospheric</div>
+            </div>
+            <div class="seat-card">
+              <div class="seat-card-icon">☕</div>
+              <div class="seat-card-name">Open Floor</div>
+              <div class="seat-card-desc">Social, lively buzz</div>
+            </div>
+          </div>
+          <p style="font-size:12px;color:var(--text-muted);margin-top:1rem;line-height:1.6;">
+            We'll do our best to accommodate your preference — subject to availability on the day.
+          </p>
+        </div>
+      </div>
+
+      <!-- Policies -->
+      <div class="info-card">
+        <div class="info-card-head">
+          <span class="info-card-head-icon">📋</span> Good to Know
+        </div>
+        <div class="info-card-body">
+          <div class="policy-item">
+            <span class="policy-icon">⏱</span>
+            Tables are held for 15 minutes. Please call if you're running late.
+          </div>
+          <div class="policy-item">
+            <span class="policy-icon">👥</span>
+            Groups larger than 12 — please call us to arrange.
+          </div>
+          <div class="policy-item">
+            <span class="policy-icon">🎂</span>
+            Celebratory occasions? Mention it in notes and we'll surprise you.
+          </div>
+          <div class="policy-item">
+            <span class="policy-icon">📞</span>
+            <span>Questions? Call <a href="tel:+919876543210" style="color:var(--teal);font-weight:500;">+91 98765 43210</a></span>
+          </div>
+        </div>
+      </div>
+
+    </aside>
+  </div>
+
+  <!-- ── ATMOSPHERE GALLERY ─────────────────────────────────────── -->
+  <div class="res-gallery">
+    <img src="https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=600&q=80" alt="Café interior" loading="lazy" />
+    <img src="https://images.unsplash.com/photo-1493857671505-72967e2e2760?w=600&q=80" alt="Café ambiance" loading="lazy" />
+    <img src="https://images.unsplash.com/photo-1445116572660-236099ec97a0?w=600&q=80" alt="Coffee cup" loading="lazy" />
+  </div>
+
+  <!-- ── FOOTER ─────────────────────────────────────────────────── -->
+  <footer id="contact">
+    <div>
+      <div class="footer-logo">Arco<span>.</span></div>
+      <p class="footer-tagline">Handcrafted coffee and warm spaces<br>in the heart of the city.</p>
+    </div>
+    <div class="footer-col">
+      <div class="footer-col-title">Explore</div>
+      <a href="index.html">Home</a>
+      <a href="menu.html">Menu</a>
+      <a href="index.html#about">About</a>
+      <a href="reservation.html">Reservations</a>
+    </div>
+    <div class="footer-col">
+      <div class="footer-col-title">Hours</div>
+      <a>Mon–Sat: 8am–10pm</a>
+      <a>Sunday: 9am–8pm</a>
+      <a>Public holidays: 10am–7pm</a>
+    </div>
+    <div class="footer-col">
+      <div class="footer-col-title">Contact</div>
+      <a href="tel:+919876543210">+91 98765 43210</a>
+      <a href="mailto:hello@arcocafe.in">hello@arcocafe.in</a>
+      <a href="#">Instagram</a>
+      <a href="#">Google Maps</a>
+    </div>
+  </footer>
+  <div class="footer-bottom">
+    <span>© 2025 Arco Café. All rights reserved.</span>
+    <span>Made with ☕</span>
+  </div>
+
+  <!-- ── SCRIPTS ────────────────────────────────────────────────── -->
+  <script>
+    /* ── CONFIG ────────────────────────────────────────────────── */
+    const GAS_URL = 'YOUR_GAS_WEB_APP_URL_HERE'; // ← Apna GAS URL yahan daalo
+
+    /* ── Set min date to today ─────────────────────────────────── */
+    (function () {
+      const d = document.getElementById('date');
+      const today = new Date();
+      const yyyy = today.getFullYear();
+      const mm = String(today.getMonth() + 1).padStart(2, '0');
+      const dd = String(today.getDate()).padStart(2, '0');
+      d.min = `${yyyy}-${mm}-${dd}`;
+      // Default to tomorrow
+      const tmr = new Date(today); tmr.setDate(tmr.getDate() + 1);
+      d.value = `${tmr.getFullYear()}-${String(tmr.getMonth()+1).padStart(2,'0')}-${String(tmr.getDate()).padStart(2,'0')}`;
+    })();
+
+    /* ── Mobile drawer ─────────────────────────────────────────── */
+    function openDrawer() {
+      document.getElementById('drawer').classList.add('open');
+      document.getElementById('drawerOverlay').classList.add('open');
+    }
+    function closeDrawer() {
+      document.getElementById('drawer').classList.remove('open');
+      document.getElementById('drawerOverlay').classList.remove('open');
+    }
+
+    /* ── Validation helpers ────────────────────────────────────── */
+    function showErr(id, show) {
+      const el = document.getElementById('err-' + id);
+      const input = document.getElementById(id);
+      if (!el || !input) return;
+      el.classList.toggle('show', show);
+      input.classList.toggle('error', show);
+    }
+
+    function validateForm() {
+      let ok = true;
+      const name   = document.getElementById('name').value.trim();
+      const phone  = document.getElementById('phone').value.trim();
+      const email  = document.getElementById('email').value.trim();
+      const date   = document.getElementById('date').value;
+      const time   = document.getElementById('time').value;
+      const guests = document.getElementById('guests').value;
+
+      showErr('name',   !name);                             if (!name)   ok = false;
+      showErr('phone',  phone.length < 7);                  if (phone.length < 7) ok = false;
+      showErr('email',  !email.includes('@'));               if (!email.includes('@')) ok = false;
+      showErr('date',   !date);                              if (!date)   ok = false;
+      showErr('time',   !time);                              if (!time)   ok = false;
+      showErr('guests', !guests);                            if (!guests) ok = false;
+
+      return ok;
+    }
+
+    /* ── Submit reservation ────────────────────────────────────── */
+    async function submitReservation() {
+      document.getElementById('formError').style.display = 'none';
+      if (!validateForm()) return;
+
+      const seatEl = document.querySelector('input[name="seat"]:checked');
+      const payload = {
+        action:    'reservation',
+        name:      document.getElementById('name').value.trim(),
+        phone:     document.getElementById('phone').value.trim(),
+        email:     document.getElementById('email').value.trim(),
+        date:      document.getElementById('date').value,
+        time:      document.getElementById('time').value,
+        guests:    document.getElementById('guests').value,
+        notes: [
+          seatEl ? 'Seating: ' + seatEl.value : '',
+          document.getElementById('occasion').value ? 'Occasion: ' + document.getElementById('occasion').value : '',
+          document.getElementById('notes').value.trim(),
+        ].filter(Boolean).join(' | '),
+      };
+
+      // Loading state
+      const btn     = document.getElementById('submitBtn');
+      const spinner = document.getElementById('btnSpinner');
+      const btnTxt  = document.getElementById('btnText');
+      btn.disabled  = true;
+      spinner.classList.add('show');
+      btnTxt.textContent = 'Sending…';
+
+      try {
+        if (GAS_URL && GAS_URL !== 'YOUR_GAS_WEB_APP_URL_HERE') {
+          const res  = await fetch(GAS_URL, {
+            method: 'POST',
+            body: JSON.stringify(payload),
+          });
+          const data = await res.json();
+          if (!data.success) throw new Error(data.error || 'Failed');
+        } else {
+          // Demo mode — simulate delay
+          await new Promise(r => setTimeout(r, 1400));
+        }
+        showSuccess(payload);
+      } catch (e) {
+        btn.disabled = false;
+        spinner.classList.remove('show');
+        btnTxt.textContent = 'Confirm Reservation';
+        document.getElementById('formError').style.display = 'block';
+      }
+    }
+
+    function showSuccess(p) {
+      document.getElementById('formWrap').style.display = 'none';
+      const s = document.getElementById('successState');
+      s.classList.add('show');
+      document.getElementById('successDetail').innerHTML = `
+        <strong>Name:</strong> ${p.name}<br>
+        <strong>Date:</strong> ${formatDate(p.date)} at ${p.time}<br>
+        <strong>Guests:</strong> ${p.guests}<br>
+        <strong>Email:</strong> ${p.email}<br>
+        ${p.notes ? `<strong>Notes:</strong> ${p.notes}` : ''}
+      `;
+      s.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    function resetForm() {
+      document.getElementById('formWrap').style.display = 'block';
+      document.getElementById('successState').classList.remove('show');
+      document.getElementById('submitBtn').disabled = false;
+      document.getElementById('btnSpinner').classList.remove('show');
+      document.getElementById('btnText').textContent = 'Confirm Reservation';
+      ['name','phone','email','time','guests','notes'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = '';
+      });
+      document.getElementById('occasion').value = '';
+    }
+
+    function formatDate(iso) {
+      if (!iso) return iso;
+      const [y, m, d] = iso.split('-');
+      const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+      return `${d} ${months[parseInt(m)-1]} ${y}`;
+    }
+
+    /* ── Load settings from GAS ────────────────────────────────── */
+    async function loadSettings() {
+      if (!GAS_URL || GAS_URL === 'YOUR_GAS_WEB_APP_URL_HERE') return;
+      try {
+        const res  = await fetch(`${GAS_URL}?action=settings`);
+        const data = await res.json();
+        // Could update hours dynamically here if needed
+      } catch {}
+    }
+    loadSettings();
+  </script>
+
+</body>
+</html>
