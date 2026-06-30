@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Gallery — Arco Café</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="style.css" />
+
+<style>
+/* ─── Page-specific styles — reuses tokens from style.css ─── */
+
+/* ─── GALLERY HERO ───────────────────────────────────────── */
+.gal-hero {
+  background: var(--teal-bg);
+  padding: 7rem 3rem 3.5rem;
+  position: relative; overflow: hidden;
+}
+.gal-hero::before {
+  content: '';
+  position: absolute; top: -80px; right: -80px;
+  width: 400px; height: 400px;
+  background: radial-gradient(circle, rgba(212,168,67,0.1) 0%, transparent 65%);
+  border-radius: 50%; pointer-events: none;
+}
+.gal-hero::after {
+  content: '';
+  position: absolute; bottom: -40px; left: 10%;
+  width: 240px; height: 240px;
+  background: radial-gradient(circle, rgba(91,158,160,0.12) 0%, transparent 65%);
+  border-radius: 50%; pointer-events: none;
+}
+.gal-eyebrow {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-size: 11px; font-weight: 500; letter-spacing: 0.12em;
+  text-transform: uppercase; color: var(--gold); margin-bottom: 1rem;
+}
+.gal-eyebrow::before { content: ''; display: block; width: 28px; height: 1px; background: var(--gold); }
+.gal-hero h1 {
+  font-family: var(--font-display);
+  font-size: clamp(2.8rem, 5vw, 4.2rem);
+  font-weight: 300; line-height: 1.1;
+  color: var(--cream); margin-bottom: 0.75rem;
+}
+.gal-hero h1 em { font-style: italic; color: var(--gold); }
+.gal-hero p {
+  font-size: 15px; line-height: 1.7;
+  color: rgba(245,240,232,0.6); max-width: 480px;
+}
+
+/* ─── STICKY FILTER BAR ──────────────────────────────────── */
+.gal-toolbar {
+  position: sticky; top: 72px; z-index: 50;
+  background: var(--cream);
+  border-bottom: 1px solid rgba(91,158,160,0.15);
+  padding: 1rem 3rem;
+  display: flex; align-items: center; gap: 0.5rem;
+  overflow-x: auto; scrollbar-width: none;
+  transition: box-shadow 0.3s;
+}
+.gal-toolbar::-webkit-scrollbar { display: none; }
+.gal-toolbar.elevated { box-shadow: 0 4px 24px rgba(14,36,37,0.08); }
+.gal-pill {
+  flex-shrink: 0;
+  font-size: 12px; font-weight: 500; letter-spacing: 0.05em;
+  text-transform: uppercase; white-space: nowrap;
+  padding: 8px 18px; border-radius: 50px;
+  border: 1.5px solid rgba(91,158,160,0.3);
+  color: var(--text-mid); background: transparent;
+  cursor: pointer; transition: all 0.2s var(--ease);
+}
+.gal-pill:hover { border-color: var(--teal); color: var(--teal); }
+.gal-pill.active { background: var(--teal-bg); color: var(--cream); border-color: var(--teal-bg); }
+
+/* ─── MASONRY GRID ───────────────────────────────────────── */
+.gal-body { padding: 2.5rem 3rem 5rem; max-width: 1400px; margin: 0 auto; }
+.gal-count { font-size: 13px; color: var(--text-muted); margin-bottom: 1.25rem; }
+.gal-count span { color: var(--text-dark); font-weight: 500; }
+
+.masonry {
+  columns: 4 220px;
+  column-gap: 1rem;
+}
+.masonry-item {
+  break-inside: avoid;
+  margin-bottom: 1rem;
+  border-radius: 14px;
+  overflow: hidden;
+  position: relative;
+  cursor: pointer;
+  background: var(--arch-white);
+  opacity: 0; transform: translateY(16px) scale(0.98);
+  animation: galIn 0.5s var(--ease) forwards;
+}
+@keyframes galIn { to { opacity: 1; transform: translateY(0) scale(1); } }
+.masonry-item img {
+  width: 100%; display: block;
+  transition: transform 0.5s var(--ease);
+}
+.masonry-item:hover img { transform: scale(1.06); }
+.masonry-placeholder {
+  width: 100%; aspect-ratio: 1/1.1;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 2.6rem;
+  transition: transform 0.5s var(--ease);
+}
+.masonry-item:hover .masonry-placeholder { transform: scale(1.06); }
+
+.masonry-overlay {
+  position: absolute; inset: 0;
+  background: linear-gradient(to top, rgba(14,36,37,0.78) 0%, rgba(14,36,37,0) 45%);
+  display: flex; align-items: flex-end;
+  padding: 1rem;
+  opacity: 0; transition: opacity 0.3s;
+}
+.masonry-item:hover .masonry-overlay { opacity: 1; }
+.masonry-caption {
+  color: var(--cream); font-size: 13px; font-weight: 500;
+  line-height: 1.4;
+}
+.masonry-cat-tag {
+  position: absolute; top: 10px; left: 10px;
+  font-size: 10px; font-weight: 600; letter-spacing: 0.06em;
+  text-transform: uppercase; padding: 4px 10px; border-radius: 20px;
+  background: rgba(245,240,232,0.92); color: var(--teal-bg);
+}
+
+/* ─── EMPTY STATE ────────────────────────────────────────── */
+.gal-empty { text-align: center; padding: 5rem 2rem; display: none; }
+.gal-empty.show { display: block; }
+.gal-empty-icon { font-size: 3rem; margin-bottom: 1rem; opacity: 0.4; }
+.gal-empty-title {
+  font-family: var(--font-display); font-size: 1.5rem;
+  font-weight: 300; color: var(--text-mid); margin-bottom: 0.5rem;
+}
+.gal-empty-sub { font-size: 14px; color: var(--text-muted); }
+
+/* ─── SKELETON ───────────────────────────────────────────── */
+.gal-skeleton { columns: 4 220px; column-gap: 1rem; }
+.skel-tile {
+  break-inside: avoid; margin-bottom: 1rem; border-radius: 14px;
+  background: linear-gradient(90deg, var(--arch-white) 25%, #e8e3d9 50%, var(--arch-white) 75%);
+  background-size: 200% 100%; animation: shimmer 1.4s infinite;
+}
+@keyframes shimmer { to { background-position: -200% 0; } }
+
+/* ─── LIGHTBOX ───────────────────────────────────────────── */
+.lightbox {
+  position: fixed; inset: 0; z-index: 500;
+  background: rgba(7,22,23,0.94);
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.3s var(--ease);
+  padding: 2rem;
+}
+.lightbox.open { opacity: 1; pointer-events: auto; }
+.lightbox-content {
+  position: relative; max-width: 900px; width: 100%;
+  display: flex; flex-direction: column; align-items: center;
+  transform: scale(0.96);
+  transition: transform 0.3s var(--ease);
+}
+.lightbox.open .lightbox-content { transform: scale(1); }
+.lightbox-img-wrap {
+  width: 100%; max-height: 75vh; border-radius: 14px; overflow: hidden;
+  background: var(--teal-bg);
+  display: flex; align-items: center; justify-content: center;
+}
+.lightbox-img-wrap img { width: 100%; height: 100%; object-fit: contain; max-height: 75vh; }
+.lightbox-placeholder {
+  width: 100%; aspect-ratio: 4/3;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 5rem;
+}
+.lightbox-caption {
+  margin-top: 1rem; text-align: center;
+  color: var(--cream); font-size: 14px; max-width: 600px;
+}
+.lightbox-cat {
+  font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--gold); margin-top: 0.5rem;
+}
+.lightbox-close {
+  position: absolute; top: -48px; right: 0;
+  width: 38px; height: 38px; border-radius: 50%;
+  background: rgba(245,240,232,0.1); border: 1px solid rgba(245,240,232,0.2);
+  color: var(--cream); font-size: 18px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: background 0.2s;
+}
+.lightbox-close:hover { background: rgba(245,240,232,0.2); }
+.lightbox-nav {
+  position: absolute; top: 50%; transform: translateY(-50%);
+  width: 44px; height: 44px; border-radius: 50%;
+  background: rgba(245,240,232,0.1); border: 1px solid rgba(245,240,232,0.2);
+  color: var(--cream); font-size: 20px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: background 0.2s;
+}
+.lightbox-nav:hover { background: rgba(245,240,232,0.2); }
+.lightbox-prev { left: -56px; }
+.lightbox-next { right: -56px; }
+@media (max-width: 900px) {
+  .lightbox-prev { left: 0; }
+  .lightbox-next { right: 0; }
+  .lightbox-content { padding: 0 50px; }
+}
+
+/* ─── RESPONSIVE ─────────────────────────────────────────── */
+@media (max-width: 900px) {
+  .gal-hero { padding: 6rem 1.5rem 2.5rem; }
+  .gal-toolbar { padding: 1rem 1.5rem; }
+  .gal-body { padding: 1.5rem 1.5rem 4rem; }
+  .masonry, .gal-skeleton { columns: 2 160px; }
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav id="navbar" class="scrolled">
+  <a href="index.html" class="nav-logo">Arco<span>.</span></a>
+  <ul class="nav-links">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="menu.html">Menu</a></li>
+    <li><a href="order.html">Order Online</a></li>
+    <li><a href="index.html#about">About</a></li>
+    <li><a href="gallery.html" class="active">Gallery</a></li>
+    <li><a href="index.html#contact">Contact</a></li>
+  </ul>
+  <a href="reservation.html" class="nav-cta">Reserve a Table</a>
+  <div class="hamburger" onclick="openDrawer()">
+    <span></span><span></span><span></span>
+  </div>
+</nav>
+
+<!-- MOBILE DRAWER -->
+<div class="drawer-overlay" id="drawerOverlay" onclick="closeDrawer()"></div>
+<div class="drawer" id="drawer">
+  <button class="drawer-close" onclick="closeDrawer()">✕</button>
+  <a href="index.html" onclick="closeDrawer()">Home</a>
+  <a href="menu.html" onclick="closeDrawer()">Menu</a>
+  <a href="order.html" onclick="closeDrawer()">Order Online</a>
+  <a href="index.html#about" onclick="closeDrawer()">About</a>
+  <a href="gallery.html" onclick="closeDrawer()">Gallery</a>
+  <a href="index.html#contact" onclick="closeDrawer()">Contact</a>
+  <a href="reservation.html" onclick="closeDrawer()" style="color:var(--gold);margin-top:1rem;">Reserve a Table →</a>
+</div>
+
+<!-- HERO -->
+<section class="gal-hero">
+  <div class="gal-eyebrow">Gallery</div>
+  <h1>Moments, made <em>visible.</em></h1>
+  <p>A look inside Arco — the warm light, the teal walls, the quiet corners where good mornings happen.</p>
+</section>
+
+<!-- STICKY FILTER -->
+<div class="gal-toolbar" id="galToolbar">
+  <button class="gal-pill active" data-cat="All" onclick="filterCat('All', this)">All</button>
+</div>
+
+<!-- BODY -->
+<main class="gal-body">
+  <div class="gal-count" id="galCount" style="display:none;"></div>
+
+  <!-- Skeleton -->
+  <div class="gal-skeleton" id="galSkeleton">
+    <div class="skel-tile" style="height:240px;"></div>
+    <div class="skel-tile" style="height:180px;"></div>
+    <div class="skel-tile" style="height:300px;"></div>
+    <div class="skel-tile" style="height:200px;"></div>
+    <div class="skel-tile" style="height:260px;"></div>
+    <div class="skel-tile" style="height:190px;"></div>
+    <div class="skel-tile" style="height:230px;"></div>
+    <div class="skel-tile" style="height:210px;"></div>
+  </div>
+
+  <!-- Masonry -->
+  <div class="masonry" id="masonry" style="display:none;"></div>
+
+  <!-- Empty -->
+  <div class="gal-empty" id="galEmpty">
+    <div class="gal-empty-icon">🖼️</div>
+    <div class="gal-empty-title">Nothing here yet</div>
+    <div class="gal-empty-sub">Try a different category.</div>
+  </div>
+</main>
+
+<!-- LIGHTBOX -->
+<div class="lightbox" id="lightbox" onclick="if(event.target===this) closeLightbox()">
+  <div class="lightbox-content">
+    <button class="lightbox-close" onclick="closeLightbox()">✕</button>
+    <button class="lightbox-nav lightbox-prev" onclick="navLightbox(-1)">‹</button>
+    <button class="lightbox-nav lightbox-next" onclick="navLightbox(1)">›</button>
+    <div class="lightbox-img-wrap" id="lightboxImgWrap"></div>
+    <div class="lightbox-caption" id="lightboxCaption"></div>
+    <div class="lightbox-cat" id="lightboxCat"></div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer id="contact">
+  <div>
+    <div class="footer-logo">Arco<span>.</span></div>
+    <p class="footer-tagline">Handcrafted coffee and warm spaces<br>in the heart of the city.</p>
+  </div>
+  <div class="footer-col">
+    <div class="footer-col-title">Explore</div>
+    <a href="index.html">Home</a>
+    <a href="menu.html">Menu</a>
+    <a href="order.html">Order Online</a>
+    <a href="gallery.html">Gallery</a>
+    <a href="reservation.html">Reservations</a>
+  </div>
+  <div class="footer-col">
+    <div class="footer-col-title">Hours</div>
+    <a>Mon–Sat: 8am–10pm</a>
+    <a>Sunday: 9am–8pm</a>
+    <a>Public holidays: 10am–7pm</a>
+  </div>
+  <div class="footer-col">
+    <div class="footer-col-title">Contact</div>
+    <a href="tel:+919876543210">+91 98765 43210</a>
+    <a href="mailto:hello@arcocafe.in">hello@arcocafe.in</a>
+    <a href="#">Instagram</a>
+    <a href="#">Google Maps</a>
+  </div>
+</footer>
+<div class="footer-bottom">
+  <span>© 2025 Arco Café. All rights reserved.</span>
+  <span>Made with ☕</span>
+</div>
+
+<script src="app.js"></script>
+<script>
+// ── STATE ──────────────────────────────────────────────
+let allPhotos    = [];
+let currentCat   = 'All';
+let lightboxIdx  = 0;
+let filteredList = [];
+
+const EMOJI = {
+  Interior: '🪴', Coffee: '☕', Food: '🥗', Desserts: '🧁',
+  Events: '🎉', Seasonal: '🍂', Default: '📷',
+};
+function emoji(cat) { return EMOJI[cat] || EMOJI.Default; }
+
+const GRADIENTS = [
+  'linear-gradient(135deg,#C8E6E7,#5B9EA0)',
+  'linear-gradient(135deg,#D4A843,#C8A97A)',
+  'linear-gradient(135deg,#5B9EA0,#3D7A7C)',
+  'linear-gradient(135deg,#3D7A7C,#1A2B2B)',
+  'linear-gradient(135deg,#EDEAE3,#C8A97A)',
+  'linear-gradient(135deg,#F5E6C0,#D4A843)',
+];
+
+// ── INIT ───────────────────────────────────────────────
+window.addEventListener('load', loadGallery);
+
+const toolbar = document.getElementById('galToolbar');
+window.addEventListener('scroll', () => {
+  toolbar.classList.toggle('elevated', window.scrollY > 160);
+}, { passive: true });
+
+document.addEventListener('keydown', (e) => {
+  if (!document.getElementById('lightbox').classList.contains('open')) return;
+  if (e.key === 'Escape') closeLightbox();
+  if (e.key === 'ArrowLeft') navLightbox(-1);
+  if (e.key === 'ArrowRight') navLightbox(1);
+});
+
+// ── LOAD GALLERY FROM GAS ──────────────────────────────
+async function loadGallery() {
+  if (!GAS_URL || GAS_URL === 'YOUR_GAS_WEB_APP_URL_HERE') {
+    loadFallback(); return;
+  }
+  try {
+    const res  = await fetch(`${GAS_URL}?action=gallery`);
+    const data = await res.json();
+    if (data.photos && data.photos.length) {
+      allPhotos = data.photos;
+      buildCategoryPills();
+    } else {
+      loadFallback();
+    }
+  } catch { loadFallback(); }
+  finally { hideSkeleton(); render(); }
+}
+
+// ── FALLBACK DATA ──────────────────────────────────────
+function loadFallback() {
+  allPhotos = [
+    { caption:'Morning light through the arches',     category:'Interior', image_url:'', height:240 },
+    { caption:'Teal latte, golden hour',               category:'Coffee',   image_url:'', height:300 },
+    { caption:'Fresh-baked basque cheesecake',          category:'Desserts', image_url:'', height:200 },
+    { caption:'The corner booth, our favourite spot',   category:'Interior', image_url:'', height:260 },
+    { caption:'Mezze plate for two',                    category:'Food',     image_url:'', height:190 },
+    { caption:'Pendant lights at dusk',                 category:'Interior', image_url:'', height:230 },
+    { caption:'Cold brew on a slow afternoon',          category:'Coffee',   image_url:'', height:210 },
+    { caption:'Live acoustic evening',                  category:'Events',   image_url:'', height:280 },
+    { caption:'Avocado toast, weekend brunch',          category:'Food',     image_url:'', height:200 },
+    { caption:'Autumn pumpkin spice specials',          category:'Seasonal', image_url:'', height:250 },
+    { caption:'Pastry counter, fresh every morning',    category:'Desserts', image_url:'', height:220 },
+    { caption:'The wood tables catching afternoon sun', category:'Interior', image_url:'', height:270 },
+  ];
+  buildCategoryPills();
+}
+
+// ── CATEGORY PILLS ─────────────────────────────────────
+function buildCategoryPills() {
+  const cats = [...new Set(allPhotos.map(p => p.category).filter(Boolean))];
+  const scroll = document.getElementById('galToolbar');
+  cats.forEach(cat => {
+    const btn = document.createElement('button');
+    btn.className = 'gal-pill';
+    btn.dataset.cat = cat;
+    btn.textContent = `${emoji(cat)} ${cat}`;
+    btn.onclick = () => filterCat(cat, btn);
+    scroll.appendChild(btn);
+  });
+}
+
+function filterCat(cat, btn) {
+  currentCat = cat;
+  document.querySelectorAll('.gal-pill').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  render();
+}
+
+// ── RENDER ─────────────────────────────────────────────
+function render() {
+  const items = currentCat === 'All' ? allPhotos : allPhotos.filter(p => p.category === currentCat);
+  filteredList = items;
+
+  const grid  = document.getElementById('masonry');
+  const empty = document.getElementById('galEmpty');
+  const count = document.getElementById('galCount');
+
+  count.style.display = 'block';
+  count.innerHTML = `Showing <span>${items.length}</span> photo${items.length !== 1 ? 's' : ''}`;
+
+  empty.classList.toggle('show', items.length === 0);
+  grid.style.display = items.length ? 'block' : 'none';
+
+  grid.innerHTML = items.map((p, i) => tileHTML(p, i)).join('');
+}
+
+function tileHTML(photo, idx) {
+  const grad = GRADIENTS[idx % GRADIENTS.length];
+  const height = photo.height || (200 + (idx % 5) * 30);
+
+  const mediaHTML = photo.image_url
+    ? `<img src="${photo.image_url}" alt="${photo.caption || ''}" loading="lazy" />`
+    : `<div class="masonry-placeholder" style="background:${grad};height:${height}px;">${emoji(photo.category)}</div>`;
+
+  return `
+  <div class="masonry-item" style="animation-delay:${idx * 50}ms" onclick="openLightbox(${idx})">
+    <span class="masonry-cat-tag">${photo.category}</span>
+    ${mediaHTML}
+    <div class="masonry-overlay">
+      <div class="masonry-caption">${photo.caption || ''}</div>
+    </div>
+  </div>`;
+}
+
+// ── SKELETON ───────────────────────────────────────────
+function hideSkeleton() {
+  document.getElementById('galSkeleton').style.display = 'none';
+  document.getElementById('masonry').style.display = 'block';
+}
+
+// ── LIGHTBOX ───────────────────────────────────────────
+function openLightbox(idx) {
+  lightboxIdx = idx;
+  renderLightbox();
+  document.getElementById('lightbox').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeLightbox() {
+  document.getElementById('lightbox').classList.remove('open');
+  document.body.style.overflow = '';
+}
+function navLightbox(dir) {
+  lightboxIdx = (lightboxIdx + dir + filteredList.length) % filteredList.length;
+  renderLightbox();
+}
+function renderLightbox() {
+  const photo = filteredList[lightboxIdx];
+  if (!photo) return;
+  const wrap = document.getElementById('lightboxImgWrap');
+  const grad = GRADIENTS[lightboxIdx % GRADIENTS.length];
+
+  wrap.innerHTML = photo.image_url
+    ? `<img src="${photo.image_url}" alt="${photo.caption || ''}" />`
+    : `<div class="lightbox-placeholder" style="background:${grad};">${emoji(photo.category)}</div>`;
+
+  document.getElementById('lightboxCaption').textContent = photo.caption || '';
+  document.getElementById('lightboxCat').textContent = photo.category || '';
+}
+
+// ── DRAWER ─────────────────────────────────────────────
+function openDrawer()  {
+  document.getElementById('drawer').classList.add('open');
+  document.getElementById('drawerOverlay').classList.add('open');
+}
+function closeDrawer() {
+  document.getElementById('drawer').classList.remove('open');
+  document.getElementById('drawerOverlay').classList.remove('open');
+}
+</script>
+</body>
+</html>
